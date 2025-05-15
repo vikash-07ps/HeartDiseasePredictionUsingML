@@ -13,6 +13,25 @@ def get_binary_file_downloader_html(df):
 st.title("Heart Disease Predictor")
 tab1,tab2,tab3=st.tabs(['Predict','Bulk Predict', 'Model Information'])
 
+
+st.sidebar.title("About the Data")
+st.sidebar.markdown("""
+        1. No NaN values allowed.
+        2. Total 11 features in this order ('Age', 'Sex', 'ChestPainType', 'RestingBP', 'Cholesterol', 'FastingBS', 'RestingECG', 'MaxHR', 'ExerciseAngina', 'Oldpeak', 'ST_Slope').\n
+        3. Feature values conventions:\n
+            - Age: age of the patient [Years]
+            - Sex: sex of the patient [0: Male, 1: Female]\n
+            - ChestPainType: chest pain type [0: Atypical Angina, 1: Non-Anginal Pain, 2: Asymtomatic, 3: Typical Angina]\n
+            - RestingBP: resting Blood pressure [mm Hg]\n
+            - Cholesterol: serum cholesterol [mm/dl]\n
+            - FastingBS: fasting blood sugar [1: FastingBS > 120mg/dl, 0: otherwise]\n
+            - RestingECG: resting electrocardiogram results [0: Normal, 1: having ST-T wave abnormality, 2: Left Ventricular Hypertrophy]\n
+            - MaxHR: maximum heart rate achieved [numeric value between 60 and 202]\n
+            - ExerciseAngina: exercise-induced Angina [0: No, 1: Yes]\n
+            - Oldpeak: oldpeak = ST [numeric value measured in depression]\n
+            - ST_Slope: the slope of the peak exercise ST segment [0: Upsloping, 1: Flat, 2: Downsloping]\n
+            """)
+
 with tab1:
      age=st.number_input("Age (Years)", min_value=0, max_value=150)
      sex=st.selectbox("Sex",["Male", "Female"])
