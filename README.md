@@ -1,1 +1,1 @@
-# HeartDiseasePredictorUsingML
+# HeartDiseasePredictionUsingML
