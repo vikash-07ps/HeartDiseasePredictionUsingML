@@ -116,36 +116,53 @@ with tab2:
             """)
     # Create file uploader in the sidebar
     uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
-    
+
     if uploaded_file is not None:
-        input_data=pd.read_csv(uploaded_file)
-        model = pickle.load(open('LogisticR.pkl','rb'))
+        input_data = pd.read_csv(uploaded_file)
         
-        expected_columns = ['Age', 'Sex', 'ChestPainType', 'RestingBP', 'Cholesterol', 'FastingBS', 'RestingECG', 'MaxHR', 'ExerciseAngina', 'Oldpeak', 'ST_Slope']
-        
-        if set(expected_columns).issubset(input_data.columns):
-            
-        
-            input_data['Prediction LR'] = ''
-            
-            for i in range(len(input_data)):
-                arr =input_data.iloc[i,:-1].values
-                input_data["Prediction LR"][i] = model.predict([arr])[0]
-            input_data.to_csv('PredictedHeartLR.csv')
-            
-            st.subheader("Predictions:")
-            st.write(input_data)
-                
-            st.markdown(get_binary_file_downloader_html(input_data), unsafe_allow_html=True)
+        # Load all models
+        model_lr = pickle.load(open('LogisticR.pkl', 'rb'))
+        model_rf = pickle.load(open('RandomForest.pkl', 'rb'))
+        model_dt = pickle.load(open('DTree.pkl', 'rb'))
+        model_svm = pickle.load(open('SVM.pkl', 'rb'))
+
+        # Required features
+        expected_features = ['Age', 'Sex', 'ChestPainType', 'RestingBP', 'Cholesterol',
+                             'FastingBS', 'RestingECG', 'MaxHR', 'ExerciseAngina', 'Oldpeak', 'ST_Slope']
+
+        if set(expected_features).issubset(input_data.columns):
+            try:
+                # Ensure column order is correct
+                features_df = input_data[expected_features]
+
+                # Perform predictions
+                input_data["Prediction LR"] = model_lr.predict(features_df)
+                input_data["Prediction RF"] = model_rf.predict(features_df)
+                input_data["Prediction DT"] = model_dt.predict(features_df)
+                input_data["Prediction SVM"] = model_svm.predict(features_df)
+
+                st.subheader("Bulk Predictions:")
+                st.write(input_data)
+
+                # Download link
+                csv = input_data.to_csv(index=False)
+                st.download_button(
+                    label="Download Prediction CSV",
+                    data=csv,
+                    file_name="HeartPredictions.csv",
+                    mime="text/csv"
+                )
+
+            except Exception as e:
+                st.error(f"An error occurred during prediction: {e}")
         else:
-            st.warning("Please make sure the uploaded CSV file has the currect columns.")
-        
+            st.warning("The uploaded CSV must have the correct 11 columns in the correct format.")
     else:
-         st.info("Upload a CSV file to get predictions.")
+        st.info("Upload a CSV file to get predictions.")
          
 with tab3:
     import plotly.express as px
-    data = {'Decision Trees': 80.97, 'Logistic Regression':85.86, 'Random Forest':85.86, 'Support Vector Machine': 84.22}
+    data = {'Decision Trees': 82.61, 'Logistic Regression':85.86, 'Random Forest':86.41, 'Support Vector Machine': 84.22}
     models=list(data.keys())
     Accuracies = list(data.values())
     df = pd.DataFrame(list(zip(models,Accuracies)), columns=['Models','Accuracies'])
