@@ -123,7 +123,7 @@ with tab2:
         # Load all models
         model_lr = pickle.load(open('LogisticR.pkl', 'rb'))
         model_rf = pickle.load(open('RandomForest.pkl', 'rb'))
-        model_dt = pickle.load(open('DTree.pkl', 'rb'))
+        model_dt = pickle.load(open('Dtree.pkl', 'rb'))
         model_svm = pickle.load(open('SVM.pkl', 'rb'))
 
         # Required features
