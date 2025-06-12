@@ -10,7 +10,8 @@ def get_binary_file_downloader_html(df):
     href = f'<a href="data:file/csv;base64,{b64}" download="predictions.csv">Download Prediction CSV</a>'
     return href
 
-st.title("Heart Disease Predictor")
+st.markdown("<h1 style='color:red;'>Heart Disease Predictor</h1>",unsafe_allow_html=True)
+
 tab1,tab2,tab3=st.tabs(['Predict','Bulk Predict', 'Model Information'])
 
 
@@ -79,19 +80,47 @@ with tab1:
              predictions.append(prediction)
          return predictions
      
-     # Create a submit button to mmake predictions
+     # Create a submit button to make predictions
+     if "result" not in st.session_state:
+        st.session_state.result = None
+
+     if "predictions" not in st.session_state:
+         st.session_state.predictions = None
+
+     if "submitted" not in st.session_state:
+         st.session_state.submitted = False
+ 
      if st.button("Submit"):
-         st.subheader('Results....')
+         st.session_state.result = predict_heart_disease(input_data)
+         st.session_state.predictions = predictions  # Make sure 'predictions' is defined before this
+         st.session_state.submitted = True
+
+     if st.session_state.submitted and st.session_state.result is not None:
+         st.subheader('Final Predicted Result')
+        
+         count = 0
+         for i in range(len(st.session_state.predictions)):
+             if st.session_state.result[i][0] == 1:
+                 count += 1
+        
+         percentage = (count / len(st.session_state.predictions)) * 100
+         color = "red" if percentage >= 50 else "green"
+         st.markdown(f"<span style='color:{color}; font-weight:bold; font-size:24px;'>This Patient has {percentage:.2f}% Chance of Heart Disease.</span>", unsafe_allow_html=True)
+
          st.markdown('************************************')
-         result = predict_heart_disease(input_data)
-         
-         for i in range(len(predictions)):
-             st.subheader(algonames[i])
-             if result[i][0] ==0:
-                 st.write("No Heart Disease Detected.")
-             else:
-                 st.write("Heart Disease Detected.")
+
+         if st.button("Detailed Result"):
+             st.subheader("Results....")
              st.markdown('************************************')
+ 
+             for i in range(len(st.session_state.predictions)):
+                 st.subheader(algonames[i])
+                 if st.session_state.result[i][0] == 0:
+                     st.write("No Heart Disease Detected.")
+                 else:
+                     st.write("Heart Disease Detected.")
+                 st.markdown('************************************')
+
              
 with tab2:
     st.title("Upload CSV File")
@@ -123,7 +152,7 @@ with tab2:
         # Load all models
         model_lr = pickle.load(open('LogisticR.pkl', 'rb'))
         model_rf = pickle.load(open('RandomForest.pkl', 'rb'))
-        model_dt = pickle.load(open('Dtree.pkl', 'rb'))
+        model_dt = pickle.load(open('DTree.pkl', 'rb'))
         model_svm = pickle.load(open('SVM.pkl', 'rb'))
 
         # Required features
@@ -136,10 +165,10 @@ with tab2:
                 features_df = input_data[expected_features]
 
                 # Perform predictions
-                input_data["Prediction LR"] = model_lr.predict(features_df)
-                input_data["Prediction RF"] = model_rf.predict(features_df)
-                input_data["Prediction DT"] = model_dt.predict(features_df)
-                input_data["Prediction SVM"] = model_svm.predict(features_df)
+                
+                percentage = ((model_lr.predict(features_df) + model_rf.predict(features_df) + model_dt.predict(features_df) + model_svm.predict(features_df))/4)*100;
+                input_data["Result (In %age Chance)"] = percentage 
+
 
                 st.subheader("Bulk Predictions:")
                 st.write(input_data)
